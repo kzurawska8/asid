@@ -1,38 +1,47 @@
-import pickle  # Importuje moduł `pickle`, który umożliwia serializację i deserializację obiektów w Pythonie.
+# moduł, umożliwia serializację i deserializację obiektów, którą używam do zapisu pliku binarnie
+import pickle
 
 def load_encoded_file(input_file):
-    with open(input_file, "rb") as file:  # Otwiera plik binarny z zakodowanymi danymi w trybie odczytu binarnego.
-        data = pickle.load(file)  # Ładuje zawartość pliku (słownik) przy użyciu `pickle`.
-    codebook = data["codebook"]  # Wyciąga słownik kodów Huffmana z danych.
-    encoded_text = ''.join(f"{byte:08b}" for byte in data["encoded_text"])  
-    # Przekształca zapisane bajty na ciąg binarny (po 8 bitów na bajt).
-    return codebook, encoded_text  # Zwraca słownik kodów i ciąg zakodowanego tekstu.
+    # otwieranie pliku binarnego z zakodowanymi danymi w trybie odczytu binarnego
+    with open(input_file, "rb") as file:
+        # ładowanie zawartości pliku przy użyciu 'pickle'
+        data = pickle.load(file)
+    # najpierw wyciągamy słownik kodów z danych w pliku
+    codebook = data["codebook"]
+    # przekształcamy zapisane bajty na ciąg binarny
+    encoded_text = ''.join(f"{byte:08b}" for byte in data["encoded_text"])
+    return codebook, encoded_text
 
 def decode_text(encoded_text, codebook):
-    reverse_codebook = {v: k for k, v in codebook.items()}  
-    # Tworzy odwrotny słownik kodów (mapuje kod binarny na znak).
-    decoded_text = ""  # Inicjalizuje pusty ciąg na zdekodowany tekst.
-    temp_code = ""  # Tymczasowy ciąg przechowujący fragmenty kodu binarnego.
+    # tworzymy odwrotny słownik kodów - mapowanie kodu binarnego na znak
+    # key to 0 lub 1 a value to znak np. 'a'
+    reverse_codebook = {v: k for k, v in codebook.items()}
+    # zmienna na zdekodowany tekst
+    decoded_text = ""
+    # zmienna na tymczasowe przechowywanie fragmentu kodu binarnego
+    temp_code = ""
 
-    for bit in encoded_text:  # Iteruje przez każdy bit zakodowanego tekstu.
-        temp_code += bit  # Dodaje bit do tymczasowego kodu.
-        if temp_code in reverse_codebook:  # Sprawdza, czy tymczasowy kod znajduje się w odwrotnym słowniku.
-            decoded_text += reverse_codebook[temp_code]  
-            # Jeśli tak, dodaje odpowiadający znak do zdekodowanego tekstu.
-            temp_code = ""  # Resetuje tymczasowy kod.
+    # przechodzimy przez każdy bit kodu
+    for bit in encoded_text:
+        # dodajemy bit do tymczasowej zmiennej
+        temp_code += bit
+        # sprawdzamy czy tymczasowa zmienna zawiera kod, który znajduje się w odwróconym słowniku
+        if temp_code in reverse_codebook:
+            # jeśli tak, dodajemy znak do zdekodowanego tekstu
+            decoded_text += reverse_codebook[temp_code]
+            # reset tymczasowej zmiennej
+            temp_code = ""
 
-    return decoded_text  # Zwraca zdekodowany tekst.
+    return decoded_text
 
+# funkcja obsugująca wczytywanie zakodowanego pliku i implementacji deszyfrowania
 def huffman_decode(input_file, output_file):
-    codebook, encoded_text = load_encoded_file(input_file)  
-    # Ładuje słownik kodów i ciąg zakodowanego tekstu z pliku wejściowego.
+    codebook, encoded_text = load_encoded_file(input_file)
 
-    decoded_text = decode_text(encoded_text, codebook)  
-    # Dekoduje zakodowany tekst na podstawie słownika kodów.
+    decoded_text = decode_text(encoded_text, codebook)
 
-    with open(output_file, "w", encoding="utf-8") as file:  
-        # Otwiera plik wyjściowy w trybie zapisu z kodowaniem UTF-8.
-        file.write(decoded_text)  # Zapisuje zdekodowany tekst do pliku.
+    # plik wyjściowy jest otwierany w trybie zapisu
+    with open(output_file, "w", encoding="utf-8") as file:
+        file.write(decoded_text)
 
-huffman_decode("encoded.bin", "decoded.txt")  
-# Wywołuje funkcję dekodowania Huffmana, odczytując dane z "encoded.bin" i zapisując wynik do "decoded.txt".
+huffman_decode("encoded.bin", "decoded.txt")
