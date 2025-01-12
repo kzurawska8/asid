@@ -14,7 +14,7 @@ def load_encoded_file(input_file):
 
 def decode_text(encoded_text, codebook):
     # tworzymy odwrotny słownik kodów - mapowanie kodu binarnego na znak
-    # key to 0 lub 1 a value to znak np. 'a'
+    # key to ten kod składający się z 0 i 1 a value to znak np. 'a'
     reverse_codebook = {v: k for k, v in codebook.items()}
     # zmienna na zdekodowany tekst
     decoded_text = ""
