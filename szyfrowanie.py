@@ -1,42 +1,59 @@
 import pickle
 
-class PriorityQueue:
-    def __init__(self):
-        self.queue = []
+def heapify(heap, i, heap_size):
+    smallest = i
+    left = 2 * i + 1
+    right = 2 * i + 2
 
-    def is_empty(self):
-        return len(self.queue) == 0
+    if left < heap_size and heap[left][0] < heap[smallest][0]:
+        smallest = left
+    if right < heap_size and heap[right][0] < heap[smallest][0]:
+        smallest = right
 
-    def insert(self, priority, value):
-        self.queue.append((priority, value))
+    if smallest != i:
+        heap[i], heap[smallest] = heap[smallest], heap[i]
+        heapify(heap, smallest, heap_size)
 
-    def pop(self):
-        if self.is_empty():
-            return None
-        
-        highest_priority_index = 0
-        for i in range(1, len(self.queue)):
-            if self.queue[i][0] < self.queue[highest_priority_index][0]:
-                highest_priority_index = i
-        
-        return self.queue.pop(highest_priority_index)
+def build_min_heap(heap):
+    for i in range(len(heap) // 2 - 1, -1, -1):
+        heapify(heap, i, len(heap))
+
+def heap_pop(heap):
+    if not heap:
+        return None
+
+    root = heap[0]
+    heap[0] = heap[-1]
+    heap.pop()
+    heapify(heap, 0, len(heap))
+
+    return root
+
+def heap_push(heap, node):
+    heap.append(node)
+    i = len(heap) - 1
+    parent = (i - 1) // 2
+
+    while i > 0 and heap[i][0] < heap[parent][0]:
+        heap[i], heap[parent] = heap[parent], heap[i]
+        i = parent
+        parent = (i - 1) // 2
 
 def build_huffman_tree(text):
     frequency = {}
     for char in text:
         frequency[char] = frequency.get(char, 0) + 1
 
-    pq = PriorityQueue()
-    for char, freq in frequency.items():
-        pq.insert(freq, [char, freq, None, None])
+    heap = [(freq, [char, freq, None, None]) for char, freq in frequency.items()]
+    build_min_heap(heap)
 
-    while len(pq.queue) > 1:
-        left = pq.pop()[1]
-        right = pq.pop()[1]
+    while len(heap) > 1:
+        left = heap_pop(heap)[1]
+        right = heap_pop(heap)[1]
         new_node = [None, left[1] + right[1], left, right]
-        pq.insert(new_node[1], new_node)
+        heap_push(heap, (new_node[1], new_node))
 
-    return pq.pop()[1]
+    return heap_pop(heap)[1]
 
 def build_codes(node, prefix, codebook):
     if node[0] is not None:
